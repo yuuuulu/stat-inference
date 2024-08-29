@@ -1,0 +1,91 @@
+---
+title: "stat inference(after learning mathematical statistics"
+format: html
+editor: visual
+bibliography: references.bib
+---
+
+I am trying to learn something from [@casella2024]
+
+## Control for Type I error---Correction of p-values)
+Using methods like Bonferroni correction or FDR control helps to maintain statistical rigor in the face of multiple testing challenges.
+
+
+### Bonferroni Correction
+
+```{r}
+
+```
+
+### FDR controlling method (Benjamini-Hochberg (BH))
+
+```{r}
+
+```
+
+### comparison
+
+```{r}
+# Setting the seed for reproducibility
+set.seed(1)
+
+# Number of tests
+m <- 8793
+
+# Number of simulations
+n_simulations <- 10000
+
+# Bonferroni correction alpha level
+alpha <- 0.05
+bonferroni_cutoff <- alpha / m
+
+# Generate p-values and check how many are below the cutoff for Bonferroni
+fwer_bonferroni <- replicate(n_simulations, {
+  pvals <- runif(m, 0, 1)
+  sum(pvals < bonferroni_cutoff) > 0
+})
+
+# Estimate FWER for Bonferroni
+fwer_bonferroni_estimate <- mean(fwer_bonferroni)
+
+# Sidak correction alpha level
+sidak_cutoff <- 1 - (1 - alpha)^(1 / m)
+
+# Generate p-values and check how many are below the cutoff for Sidak
+fwer_sidak <- replicate(n_simulations, {
+  pvals <- runif(m, 0, 1)
+  sum(pvals < sidak_cutoff) > 0
+})
+
+# Estimate FWER for Sidak
+fwer_sidak_estimate <- mean(fwer_sidak)
+
+# BH (Benjamini-Hochberg) FDR control
+fdr_bh <- replicate(n_simulations, {
+  pvals <- runif(m, 0, 1)
+  bh_adjusted_pvals <- p.adjust(pvals, method = "BH")
+  sum(bh_adjusted_pvals < alpha) > 0
+})
+
+# Estimate FDR for BH
+fdr_bh_estimate <- mean(fdr_bh)
+
+# Plotting Bonferroni and Sidak cutoffs for various m
+alphas <- seq(0, 0.25, 0.01)
+m_values <- seq(2, 1000, 50)
+bonferroni_alpha <- sapply(m_values, function(m) alphas / m)
+sidak_alpha <- sapply(m_values, function(m) 1 - (1 - alphas)^(1 / m))
+
+# Plotting the results
+plot(m_values, bonferroni_alpha[1,], type = "l", col = "red", ylab = "Alpha cutoff", xlab = "Number of tests (m)", ylim = c(0, 0.05))
+lines(m_values, sidak_alpha[1,], col = "blue")
+legend("topright", legend = c("Bonferroni", "Sidak"), col = c("red", "blue"), lty = 1)
+
+# Print the FWER and FDR estimates(error rate假阳性)
+cat("Monte Carlo estimate of FWER for Bonferroni:", fwer_bonferroni_estimate, "\n")
+cat("Monte Carlo estimate of FWER for Sidak:", fwer_sidak_estimate, "\n")
+cat("Monte Carlo estimate of FDR for Benjamini-Hochberg (BH):", fdr_bh_estimate, "\n")
+
+```
+
+Thanks to : <https://github.com/thatsme10001/Statistical-Inference-and-Modeling-for-High-throughput-Experiments/tree/main/week%202/Bonferroni%20Correction%20Exercises> from edX....
